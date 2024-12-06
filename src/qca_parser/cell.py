@@ -1,8 +1,8 @@
 class Cell:
-    def __init__(self, x, y, diameter, spin, potential, clock=0):
+    def __init__(self, x, y, clock=-1):
         self.x = x
         self.y = y
-        self.diameter = diameter
-        self.spin = spin
-        self.potential = potential
         self.clock = clock
+
+    def __str__(self):
+        return f"Cell({self.x}, {self.y}, {self.clock})"
