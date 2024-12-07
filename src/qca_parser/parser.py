@@ -1,4 +1,5 @@
 from cell import Cell
+from utils import parse_cell_function
 
 
 class QCAParser:
@@ -11,8 +12,10 @@ class QCAParser:
         self.current_sections = []
         self.last_cell_x = None
         self.last_cell_y = None
+        self.last_cell_function = None
+        self.last_cell_clock = None
 
-    def in_section(self, section):
+    def in_section(self, section: str) -> bool:
         """Checks if the given section is currently open.
 
         Args:
@@ -23,7 +26,7 @@ class QCAParser:
         """
         return section in self.current_sections
 
-    def last_section(self):
+    def last_section(self) -> str:
         """Returns the name of the most recent section.
 
         Returns:
@@ -33,7 +36,7 @@ class QCAParser:
             return None
         return self.current_sections[-1]
 
-    def push_section(self, section):
+    def push_section(self, section: str):
         """Pushes the section name to the top of the sections stack.
 
         Args:
@@ -42,7 +45,7 @@ class QCAParser:
         print(f"{(2*len(self.current_sections)) * ' '}[{section}]")
         self.current_sections.append(section)
 
-    def try_pop_section(self, section):
+    def try_pop_section(self, section: str) -> bool:
         """Tries to pop the section name from the sections stack.
         Returns false if the given section name doesn't match the name of the
         top section.
@@ -64,17 +67,22 @@ class QCAParser:
             self.current_sections.pop()
             return True
 
-    def handle_opening_tag(self, section):
+    def handle_opening_tag(self, section: str):
         pass
 
-    def handle_closing_tag(self, section):
+    def handle_closing_tag(self, section: str):
         if section == "TYPE:QCADCell":
             # save the cell
-            cell = Cell(self.last_cell_x, self.last_cell_y)
+            cell = Cell(
+                self.last_cell_x,
+                self.last_cell_y,
+                self.last_cell_function,
+                self.last_cell_clock,
+            )
             self.cells.append(cell)
             print(f"Parsed cell: {cell}")
 
-    def parse(self, filename):
+    def parse(self, filename: str) -> None:
         """Parses the file with the given filename.
 
         Args:
@@ -118,6 +126,12 @@ class QCAParser:
                         self.last_cell_x = float(line.split("=")[1])
                     elif line.startswith("y="):
                         self.last_cell_y = float(line.split("=")[1])
+                    elif line.startswith("cell_options.clock="):
+                        self.last_cell_clock = int(line.split("=")[1])
+                    elif line.startswith("cell_function="):
+                        self.last_cell_function = parse_cell_function(
+                            line.split("=")[1]
+                        )
 
         print("*****")
         print(f"File {filename} parsed successfully, got {len(self.cells)} cells.")
