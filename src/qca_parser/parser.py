@@ -82,6 +82,38 @@ class QCAParser:
             self.cells.append(cell)
             print(f"Parsed cell: {cell}")
 
+    def _get_min_cell_x(self) -> float:
+        """Returns the minimum x coordinate of all cells in the design."""
+        return min([cell.x for cell in self.cells])
+
+    def _get_min_cell_y(self) -> float:
+        """Returns the minimum y coordinate of all cells in the design."""
+        return min([cell.y for cell in self.cells])
+
+    def _get_min_cell_x_distance(self) -> float:
+        """Returns the minimum x distance between two cells in the design.
+
+        Returns:
+            float: The minimum x distance between two cells.
+        """
+        return min(
+            [abs(a.x - b.x) for a in self.cells for b in self.cells if a.x != b.x]
+        )
+
+    def _get_min_cell_y_distance(self) -> float:
+        """Returns the minimum y distance between two cells in the design.
+
+        Returns:
+            float: The minimum y distance between two cells.
+        """
+        return min(
+            [abs(a.y - b.y) for a in self.cells for b in self.cells if a.y != b.y]
+        )
+
+    def construct_graph(self, cells: list[Cell]) -> None:
+        min_x_dist = self._get_min_cell_x_distance()
+        print(min_x_dist)
+
     def parse(self, filename: str) -> None:
         """Parses the file with the given filename.
 
@@ -119,11 +151,14 @@ class QCAParser:
                     self.handle_opening_tag(section)
 
                 # read cell coordinates
-                if self.in_section("TYPE:QCADCell") and not self.in_section(
-                    "TYPE:CELL_DOT"
+                if (
+                    self.in_section("TYPE:QCADCell")
+                    and not self.in_section("TYPE:CELL_DOT")
+                    and not self.in_section("TYPE:QCADLabel")
                 ):
                     if line.startswith("x="):
                         self.last_cell_x = float(line.split("=")[1])
+                        print(f"x={self.last_cell_x}")
                     elif line.startswith("y="):
                         self.last_cell_y = float(line.split("=")[1])
                     elif line.startswith("cell_options.clock="):
@@ -133,11 +168,28 @@ class QCAParser:
                             line.split("=")[1]
                         )
 
+        # normalize cell coordinates
+        min_cell_x = self._get_min_cell_x()
+        min_cell_y = self._get_min_cell_y()
+        min_cell_x_dist = self._get_min_cell_x_distance()
+        min_cell_y_dist = self._get_min_cell_y_distance()
+        print("Min x:", min_cell_x)
+        print("Min y:", min_cell_y)
+        print("Min x distance:", min_cell_x_dist)
+        print("Min y distance:", min_cell_y_dist)
+
+        for c in self.cells:
+            c.x -= min_cell_x
+            c.y -= min_cell_y
+            c.x /= min_cell_x_dist
+            c.y /= min_cell_y_dist
+
         print("*****")
         print(f"File {filename} parsed successfully, got {len(self.cells)} cells.")
         for c in self.cells:
             print(c)
         print("*****")
+
         return None
 
 
