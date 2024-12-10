@@ -5,7 +5,9 @@ description = "Default template for PDM package"
 authors = [
     {name = "Iztok Bajcar", email = "ib8548@student.uni-lj.si"},
 ]
-dependencies = []
+dependencies = [
+    "pyvis>=0.3.2",
+]
 requires-python = "==3.11.*"
 readme = "README.md"
 license = {text = "MIT"}

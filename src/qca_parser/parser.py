@@ -1,5 +1,7 @@
 from cell import Cell
-from utils import parse_cell_function
+from cell_graph import CellGraph
+from utils import manhattan_dist, parse_cell_function
+from pyvis.network import Network
 
 
 class QCAParser:
@@ -15,6 +17,7 @@ class QCAParser:
         self.last_cell_function = None
         self.last_cell_clock = None
         self.last_cell_label = None
+        self.graph = None
 
     def in_section(self, section: str) -> bool:
         """Checks if the given section is currently open.
@@ -118,9 +121,84 @@ class QCAParser:
             [abs(a.y - b.y) for a in self.cells for b in self.cells if a.y != b.y]
         )
 
-    def construct_graph(self, cells: list[Cell]) -> None:
+    def parse_line(self, line: str):
+        if line.startswith("[#") and line.endswith("]"):
+            section = line[2:-1]
+
+            if not self.try_pop_section(section):
+                print(
+                    f"ERROR: closing tag ({section}) doesn't match the previous opening tag ({self.last_section})."
+                )
+                return None
+
+            self.handle_closing_tag(section)
+
+        elif line.startswith("[") and line.endswith("]"):
+            section = line[1:-1]
+            self.push_section(section)
+
+            self.handle_opening_tag(section)
+
+        # read cell coordinates
+        if (
+            self.in_section("TYPE:QCADCell")
+            and not self.in_section("TYPE:CELL_DOT")
+            and not self.in_section("TYPE:QCADLabel")
+        ):
+            if line.startswith("x="):
+                self.last_cell_x = float(line.split("=")[1])
+                print(f"x={self.last_cell_x}")
+            elif line.startswith("y="):
+                self.last_cell_y = float(line.split("=")[1])
+            elif line.startswith("cell_options.clock="):
+                self.last_cell_clock = int(line.split("=")[1])
+            elif line.startswith("cell_function="):
+                self.last_cell_function = parse_cell_function(line.split("=")[1])
+        elif self.in_section("TYPE:QCADLabel") and self.in_section("TYPE:QCADLabel"):
+            if line.startswith("psz="):
+                self.last_cell_label = line.split("=")[1]
+
+    def construct_graph(self) -> None:
+        # whether two nodes are connected (i.e. the respective two cells
+        # adjacent) will be determined by checking if their
+        # distance equals the minimum distance along each dimension
         min_x_dist = self._get_min_cell_x_distance()
-        print(min_x_dist)
+        min_y_dist = self._get_min_cell_y_distance()
+
+        self.graph = CellGraph()
+
+        # add all cells to the graph
+        for cell in self.cells:
+            self.graph.add_cell(cell)
+
+        # connect neighboring cells
+        for node1 in self.graph.nodes:
+            cell1 = node1.value
+            for node2 in self.graph.nodes:
+                if node1 == node2:
+                    continue
+
+                cell2 = node2.value
+
+                dist = manhattan_dist((cell1.x, cell1.y), (cell2.x, cell2.y))
+                print(f"{cell1.get_id()} - {cell2.get_id()}: {dist}")
+
+                if dist == min_x_dist or dist == min_y_dist:
+                    self.graph.add_connection(node1, node2)
+
+    def visualize_graph(self):
+        """Uses pyvis to visualize the cell graph."""
+        net = Network(directed=True, height="500px", filter_menu=True)
+
+        for node in self.graph.nodes:
+            node_color = node.value.get_color()
+            node_label = node.value.label
+            net.add_node(node.value.get_id(), color=node_color, label=node_label)
+
+        for conn in self.graph.connections:
+            net.add_edge(conn.source.value.get_id(), conn.sink.value.get_id())
+
+        net.show("graph.html", notebook=False)
 
     def parse(self, filename: str) -> None:
         """Parses the file with the given filename.
@@ -141,45 +219,7 @@ class QCAParser:
                 if len(line) == 0:
                     continue
 
-                if line.startswith("[#") and line.endswith("]"):
-                    section = line[2:-1]
-
-                    if not self.try_pop_section(section):
-                        print(
-                            f"ERROR: closing tag ({section}) doesn't match the previous opening tag ({last_section})."
-                        )
-                        return None
-
-                    self.handle_closing_tag(section)
-
-                elif line.startswith("[") and line.endswith("]"):
-                    section = line[1:-1]
-                    self.push_section(section)
-
-                    self.handle_opening_tag(section)
-
-                # read cell coordinates
-                if (
-                    self.in_section("TYPE:QCADCell")
-                    and not self.in_section("TYPE:CELL_DOT")
-                    and not self.in_section("TYPE:QCADLabel")
-                ):
-                    if line.startswith("x="):
-                        self.last_cell_x = float(line.split("=")[1])
-                        print(f"x={self.last_cell_x}")
-                    elif line.startswith("y="):
-                        self.last_cell_y = float(line.split("=")[1])
-                    elif line.startswith("cell_options.clock="):
-                        self.last_cell_clock = int(line.split("=")[1])
-                    elif line.startswith("cell_function="):
-                        self.last_cell_function = parse_cell_function(
-                            line.split("=")[1]
-                        )
-                elif self.in_section("TYPE:QCADLabel") and self.in_section(
-                    "TYPE:QCADLabel"
-                ):
-                    if line.startswith("psz="):
-                        self.last_cell_label = line.split("=")[1]
+                self.parse_line(line)
 
         # normalize cell coordinates
         min_cell_x = self._get_min_cell_x()
@@ -196,6 +236,9 @@ class QCAParser:
             c.y -= min_cell_y
             c.x /= min_cell_x_dist
             c.y /= min_cell_y_dist
+
+        self.construct_graph()
+        self.visualize_graph()
 
         print("*****")
         print(f"File {filename} parsed successfully, got {len(self.cells)} cells.")
