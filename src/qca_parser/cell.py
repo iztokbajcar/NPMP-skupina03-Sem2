@@ -14,11 +14,13 @@ class Cell:
         y: float,
         function: CellFunction = CellFunction.NORMAL,
         clock: int = -1,
+        label: str | None = None,
     ):
         self.x = x
         self.y = y
         self.function = function
         self.clock = clock
+        self.label = label
 
     def __str__(self) -> str:
-        return f"Cell {{  {self.function.value}, ({self.x}, {self.y}), clock {self.clock}  }}"
+        return f"Cell '{self.label if self.label is not None else ''}' {{  {self.function.value}, ({self.x}, {self.y}), clock {self.clock}  }}"

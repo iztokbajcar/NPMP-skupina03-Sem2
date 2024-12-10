@@ -14,6 +14,7 @@ class QCAParser:
         self.last_cell_y = None
         self.last_cell_function = None
         self.last_cell_clock = None
+        self.last_cell_label = None
 
     def in_section(self, section: str) -> bool:
         """Checks if the given section is currently open.
@@ -68,7 +69,13 @@ class QCAParser:
             return True
 
     def handle_opening_tag(self, section: str):
-        pass
+        if section == "TYPE:QCADCell":
+            # reset cell variables
+            self.last_cell_x = None
+            self.last_cell_y = None
+            self.last_cell_function = None
+            self.last_cell_clock = None
+            self.last_cell_label = None
 
     def handle_closing_tag(self, section: str):
         if section == "TYPE:QCADCell":
@@ -78,6 +85,7 @@ class QCAParser:
                 self.last_cell_y,
                 self.last_cell_function,
                 self.last_cell_clock,
+                self.last_cell_label,
             )
             self.cells.append(cell)
             print(f"Parsed cell: {cell}")
@@ -167,6 +175,11 @@ class QCAParser:
                         self.last_cell_function = parse_cell_function(
                             line.split("=")[1]
                         )
+                elif self.in_section("TYPE:QCADLabel") and self.in_section(
+                    "TYPE:QCADLabel"
+                ):
+                    if line.startswith("psz="):
+                        self.last_cell_label = line.split("=")[1]
 
         # normalize cell coordinates
         min_cell_x = self._get_min_cell_x()
