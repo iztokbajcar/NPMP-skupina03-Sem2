@@ -122,6 +122,10 @@ class QCAParser:
         )
 
     def parse_line(self, line: str):
+        # replace all commas with periods
+        # (standardize decimal separators)
+        line = line.replace(",", ".")
+
         if line.startswith("[#") and line.endswith("]"):
             section = line[2:-1]
 
