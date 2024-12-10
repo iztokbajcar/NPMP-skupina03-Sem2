@@ -1,7 +1,9 @@
 from cell import Cell
-from cell_graph import CellGraph
-from utils import manhattan_dist, parse_cell_function
+from gate import Gate, GateType
+from graph import Graph
+from utils import euclidean_dist, manhattan_dist, parse_cell_function
 from pyvis.network import Network
+import math
 
 
 class QCAParser:
@@ -169,11 +171,11 @@ class QCAParser:
         min_x_dist = self._get_min_cell_x_distance()
         min_y_dist = self._get_min_cell_y_distance()
 
-        self.graph = CellGraph()
+        self.graph = Graph()
 
         # add all cells to the graph
         for cell in self.cells:
-            self.graph.add_cell(cell)
+            self.graph.add_component(cell)
 
         # connect neighboring cells
         for node1 in self.graph.nodes:
@@ -184,11 +186,14 @@ class QCAParser:
 
                 cell2 = node2.value
 
-                dist = manhattan_dist((cell1.x, cell1.y), (cell2.x, cell2.y))
-                print(f"{cell1.get_id()} - {cell2.get_id()}: {dist}")
+                m_dist = manhattan_dist((cell1.x, cell1.y), (cell2.x, cell2.y))
+                print(f"{cell1.get_id()} - {cell2.get_id()}: {m_dist}")
 
-                if dist == min_x_dist or dist == min_y_dist:
+                if m_dist == min_x_dist or m_dist == min_y_dist:
                     self.graph.add_connection(node1, node2)
+
+        # structure recognition
+        self.graph.recognize_structures()
 
     def visualize_graph(self):
         """Uses pyvis to visualize the cell graph."""
@@ -196,8 +201,15 @@ class QCAParser:
 
         for node in self.graph.nodes:
             node_color = node.value.get_color()
+            node_shape = node.value.get_shape()
             node_label = node.value.label
-            net.add_node(node.value.get_id(), color=node_color, label=node_label)
+
+            net.add_node(
+                node.value.get_id(),
+                color={"background": node_color, "border": "black"},
+                shape=node_shape,
+                label=node_label,
+            )
 
         for conn in self.graph.connections:
             net.add_edge(
@@ -257,4 +269,5 @@ class QCAParser:
 
 if __name__ == "__main__":
     parser = QCAParser()
-    parser.parse("example_majoritygate.qca")
+    # parser.parse("example_majoritygate.qca")
+    parser.parse("example_negator.qca")

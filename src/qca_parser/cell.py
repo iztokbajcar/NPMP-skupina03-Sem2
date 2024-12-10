@@ -1,3 +1,4 @@
+from component import Component
 from enum import Enum
 
 
@@ -7,7 +8,7 @@ class CellFunction(Enum):
     OUTPUT = "OUTPUT"
 
 
-class Cell:
+class Cell(Component):
     def __init__(
         self,
         x: float,
@@ -42,3 +43,6 @@ class Cell:
                 return "cyan"
             else:
                 return "white"
+
+    def get_shape(self):
+        return "dot"

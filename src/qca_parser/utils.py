@@ -32,3 +32,16 @@ def manhattan_dist(coords1: tuple[float, float], coords2: tuple[float, float]) -
         float: The manhattan distance between the two coordinates.
     """
     return abs(coords1[0] - coords2[0]) + abs(coords1[1] - coords2[1])
+
+
+def euclidean_dist(coords1: tuple[float, float], coords2: tuple[float, float]) -> float:
+    """Calculates the euclidean distance between the two given coordinates.
+
+    Args:
+        coords1 (tuple[float, float]): The first coordinate.
+        coords2 (tuple[float, float]): The second coordinate.
+
+    Returns:
+        float: The euclidean distance between the two coordinates.
+    """
+    return ((coords1[0] - coords2[0]) ** 2 + (coords1[1] - coords2[1]) ** 2) ** 0.5
