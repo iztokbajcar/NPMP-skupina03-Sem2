@@ -188,7 +188,7 @@ class QCAParser:
 
     def visualize_graph(self):
         """Uses pyvis to visualize the cell graph."""
-        net = Network(directed=True, height="500px", filter_menu=True)
+        net = Network(directed=False, height="500px", filter_menu=True)
 
         for node in self.graph.nodes:
             node_color = node.value.get_color()
@@ -196,7 +196,9 @@ class QCAParser:
             net.add_node(node.value.get_id(), color=node_color, label=node_label)
 
         for conn in self.graph.connections:
-            net.add_edge(conn.source.value.get_id(), conn.sink.value.get_id())
+            net.add_edge(
+                conn.source.value.get_id(), conn.sink.value.get_id(), color="gray"
+            )
 
         net.show("graph.html", notebook=False)
 

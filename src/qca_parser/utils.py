@@ -13,9 +13,9 @@ def parse_cell_function(function: str) -> CellFunction:
         CellFunction: The CellFunction object corresponding to the given string.
         If an invalid string is given, the function returns CellFunction.NORMAL.
     """
-    if function == "QCAD_CELL_MODE_INPUT":
+    if function == "QCAD_CELL_INPUT":
         return CellFunction.INPUT
-    elif function == "QCAD_CELL_MODE_OUTPUT":
+    elif function == "QCAD_CELL_OUTPUT":
         return CellFunction.OUTPUT
     else:
         return CellFunction.NORMAL
