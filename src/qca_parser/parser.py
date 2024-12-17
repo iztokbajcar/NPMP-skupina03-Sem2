@@ -312,7 +312,6 @@ class QCAParser:
             c.y /= min_cell_y_dist
 
         self.construct_graph()
-        self.visualize_graph()
 
         print("*****")
         print(f"File {filename} parsed successfully, got {len(self.cells)} cells.")
@@ -320,10 +319,11 @@ class QCAParser:
             print(c)
         print("*****")
 
-        return self.cells
+        return self.graph
 
 
 if __name__ == "__main__":
     parser = QCAParser()
     # parser.parse("example_majoritygate.qca")
     parser.parse("example_negator.qca")
+    parser.visualize_graph()
