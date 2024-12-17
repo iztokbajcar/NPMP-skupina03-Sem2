@@ -4,6 +4,7 @@ from graph import Graph
 from utils import euclidean_dist, manhattan_dist, parse_cell_function
 from pyvis.network import Network
 import math
+import numpy as np
 
 
 class QCAParser:
@@ -123,6 +124,46 @@ class QCAParser:
             [abs(a.y - b.y) for a in self.cells for b in self.cells if a.y != b.y]
         )
 
+    def _get_majority_cell_x_distance(self, n: float) -> float:
+        """Returns the majority x distance between two cells in the design that is smaller than n.
+
+        Args:
+            n (float): The maximum x distance between two cells.
+
+        Returns:
+            float: The majority x distance between two cells that is smaller than n.
+        """
+        distances = []
+        for a in self.cells:
+            for b in self.cells:
+                if a.x != b.x:
+                    dist = abs(a.x - b.x)
+                    if dist <= n:
+                        distances.append(dist)
+
+        values, counts = np.unique(distances, return_counts=True)
+        return values[np.argmax(counts)]
+
+    def _get_majority_cell_y_distance(self, n: float) -> float:
+        """Returns the majority y distance between two cells in the design that is smaller than n.
+
+        Args:
+            n (float): The maximum y distance between two cells.
+
+        Returns:
+            float: The majority y distance between two cells that is smaller than n.
+        """
+        distances = []
+        for a in self.cells:
+            for b in self.cells:
+                if a.y != b.y:
+                    dist = abs(a.y - b.y)
+                    if dist <= n:
+                        distances.append(dist)
+
+        values, counts = np.unique(distances, return_counts=True)
+        return values[np.argmax(counts)]
+
     def parse_line(self, line: str):
         # replace all commas with periods
         # (standardize decimal separators)
@@ -167,9 +208,15 @@ class QCAParser:
     def construct_graph(self) -> None:
         # whether two nodes are connected (i.e. the respective two cells
         # adjacent) will be determined by checking if their
-        # distance equals the minimum distance along each dimension
+        # distance equals the majority distance between cells along each dimension
         min_x_dist = self._get_min_cell_x_distance()
         min_y_dist = self._get_min_cell_y_distance()
+        majority_x_dist = self._get_majority_cell_x_distance(
+            2 * max(min_x_dist, min_y_dist)
+        )
+        majority_y_dist = self._get_majority_cell_y_distance(
+            2 * max(min_x_dist, min_y_dist)
+        )
 
         self.graph = Graph()
 
@@ -186,14 +233,15 @@ class QCAParser:
 
                 cell2 = node2.value
 
-                m_dist = manhattan_dist((cell1.x, cell1.y), (cell2.x, cell2.y))
-                print(f"{cell1.get_id()} - {cell2.get_id()}: {m_dist}")
-
-                if m_dist == min_x_dist or m_dist == min_y_dist:
+                # connect two cells if they are within each other's Moore neighborhood
+                if (
+                    abs(cell1.x - cell2.x) <= majority_x_dist
+                    and abs(cell1.y - cell2.y) <= majority_y_dist
+                ):
                     self.graph.add_connection(node1, node2)
 
         # structure recognition
-        self.graph.recognize_structures()
+        # self.graph.recognize_structures()
 
     def visualize_graph(self):
         """Uses pyvis to visualize the cell graph."""
@@ -244,10 +292,18 @@ class QCAParser:
         min_cell_y = self._get_min_cell_y()
         min_cell_x_dist = self._get_min_cell_x_distance()
         min_cell_y_dist = self._get_min_cell_y_distance()
+        majority_x_dist = self._get_majority_cell_x_distance(
+            2 * max(min_cell_x_dist, min_cell_y_dist)
+        )
+        majority_y_dist = self._get_majority_cell_y_distance(
+            2 * max(min_cell_x_dist, min_cell_y_dist)
+        )
         print("Min x:", min_cell_x)
         print("Min y:", min_cell_y)
         print("Min x distance:", min_cell_x_dist)
         print("Min y distance:", min_cell_y_dist)
+        print("Majority x distance:", majority_x_dist)
+        print("Majority y distance:", majority_y_dist)
 
         for c in self.cells:
             c.x -= min_cell_x
@@ -264,7 +320,7 @@ class QCAParser:
             print(c)
         print("*****")
 
-        return None
+        return self.cells
 
 
 if __name__ == "__main__":
