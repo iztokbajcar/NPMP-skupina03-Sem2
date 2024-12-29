@@ -1,7 +1,7 @@
-from cell import Cell
-from gate import Gate, GateType
-from graph import Graph
-from utils import euclidean_dist, manhattan_dist, parse_cell_function
+from .cell import Cell
+from .gate import Gate, GateType
+from .graph import Graph
+from .utils import euclidean_dist, manhattan_dist, parse_cell_function
 from pyvis.network import Network
 import math
 import numpy as np

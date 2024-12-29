@@ -1,4 +1,4 @@
-from cell import CellFunction
+from .cell import CellFunction
 
 
 def parse_cell_function(function: str) -> CellFunction:

@@ -1,7 +1,7 @@
-from component import Component
-from cell import Cell
-from gate import Gate, GateType
-from utils import euclidean_dist, manhattan_dist
+from .component import Component
+from .cell import Cell
+from .gate import Gate, GateType
+from .utils import euclidean_dist, manhattan_dist
 import math
 
 
