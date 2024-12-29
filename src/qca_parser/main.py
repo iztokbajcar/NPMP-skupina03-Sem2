@@ -3,7 +3,7 @@ from simulator import Simulator
 
 if __name__ == "__main__":
     parser = QCAParser()
-    graph = parser.parse("example_negator.qca")
+    graph = parser.parse("and.qca")
     parser.visualize_graph()
 
     simulator = Simulator(graph)

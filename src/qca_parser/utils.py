@@ -17,8 +17,25 @@ def parse_cell_function(function: str) -> CellFunction:
         return CellFunction.INPUT
     elif function == "QCAD_CELL_OUTPUT":
         return CellFunction.OUTPUT
+    elif function == "QCAD_CELL_FIXED":
+        return CellFunction.FIXED
     else:
         return CellFunction.NORMAL
+
+
+def const_cell_label_to_polarization(label: str) -> int:
+    """Converts a constant cell label (i.e. -1) to a polarization (0 or 1).
+
+    Args:
+        label (str): The label of the fixed (constant) cell.
+
+    Returns:
+        int: The polarization (0 or 1).
+    """
+    if float(label) == -1:
+        return 0
+    else:
+        return 1
 
 
 def manhattan_dist(coords1: tuple[float, float], coords2: tuple[float, float]) -> float:

@@ -90,7 +90,10 @@ class Simulator:
 
     def reset_cell_polarizations(self):
         for n in self.graph.nodes:
-            n.value.polarization = None
+            if not (
+                isinstance(n.value, Cell) and n.value.function == CellFunction.FIXED
+            ):
+                n.value.polarization = None
 
     def simulate(self, num_cycles: int, step: float):
         # extract input nodes

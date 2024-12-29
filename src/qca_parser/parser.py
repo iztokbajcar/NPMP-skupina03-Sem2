@@ -1,7 +1,12 @@
-from cell import Cell
+from cell import Cell, CellFunction
 from gate import Gate, GateType
 from graph import Graph
-from utils import euclidean_dist, manhattan_dist, parse_cell_function
+from utils import (
+    euclidean_dist,
+    manhattan_dist,
+    parse_cell_function,
+    const_cell_label_to_polarization,
+)
 from pyvis.network import Network
 import math
 import numpy as np
@@ -93,6 +98,10 @@ class QCAParser:
                 self.last_cell_clock,
                 self.last_cell_label,
             )
+
+            if cell.function == CellFunction.FIXED:
+                cell.polarization = const_cell_label_to_polarization(cell.label)
+
             self.cells.append(cell)
             print(f"Parsed cell: {cell}")
 

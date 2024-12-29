@@ -6,6 +6,7 @@ class CellFunction(Enum):
     INPUT = "INPUT"
     NORMAL = "NORMAL"
     OUTPUT = "OUTPUT"
+    FIXED = "FIXED"
 
 
 class Cell(Component):
@@ -41,9 +42,11 @@ class Cell(Component):
             return "blue"
         elif self.function == CellFunction.OUTPUT:
             return "yellow"
+        elif self.function == CellFunction.FIXED:
+            return "orange"
         else:
             if self.clock == 0:
-                return "green"
+                return "lime"
             elif self.clock == 1:
                 return "magenta"
             elif self.clock == 2:
