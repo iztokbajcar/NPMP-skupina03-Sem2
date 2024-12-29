@@ -1,6 +1,7 @@
 from component import Component
 from cell import Cell
 from gate import Gate, GateType
+from negator import Negator
 from utils import euclidean_dist, manhattan_dist
 import math
 
@@ -31,7 +32,12 @@ class Graph:
         self.connections.append(GraphConnection(source, sink))
 
     def remove_connection(self, source: GraphNode, sink: GraphNode):
-        self.connections.remove(GraphConnection(source, sink))
+        for c in self.connections:
+            if c.source == source and c.sink == sink:
+                self.connections.remove(c)
+                return
+
+        raise Exception("Connection not found")
 
     def component_neighbors(self, component: Component) -> list[Component]:
         """Returns the neighbors of the given cell."""
@@ -39,7 +45,7 @@ class Graph:
 
         for conn in self.connections:
             if conn.source.value == component:
-                neighbors.append(conn.sink.value)
+                neighbors.append(conn.sink)
 
         return neighbors
 
@@ -68,7 +74,13 @@ class Graph:
                     # assumption: if the cells are diagonally adjacent and
                     # have no common neighbors, they form a negator
                     print(f"NEG between {cell1.get_id()} and {cell2.get_id()}")
-                    negator = self.add_component(Gate(GateType.NEGATOR))
+                    negator = self.add_component(Negator())
+
+                    # remove old connection
+                    self.remove_connection(node1, node2)
+                    self.remove_connection(node2, node1)
+
+                    # add new connections
                     self.add_connection(node1, negator)
                     self.add_connection(negator, node1)
                     self.add_connection(node2, negator)

@@ -17,6 +17,7 @@ class Cell(Component):
         clock: int = -1,
         label: str | None = None,
     ):
+        super().__init__()
         self.x = x
         self.y = y
         self.function = function
@@ -28,6 +29,12 @@ class Cell(Component):
 
     def get_id(self):
         return f"{self.x}_{self.y}"
+
+    def get_name(self):
+        if self.label is not None:
+            return self.label
+        else:
+            return self.get_id()
 
     def get_color(self):
         if self.function == CellFunction.INPUT:
@@ -46,3 +53,31 @@ class Cell(Component):
 
     def get_shape(self):
         return "dot"
+
+    def determine_polarization(self, node, graph, visited, clk0, clk1, clk2, clk3):
+        cell = node.value
+
+        if cell.function == CellFunction.INPUT:
+            # the polarization of an input cell is determined by the clock
+            print("The cell is an input cell")
+            if cell.clock == 0:
+                cell.polarization = clk0
+            elif cell.clock == 1:
+                cell.polarization = clk1
+            elif cell.clock == 2:
+                cell.polarization = clk2
+            else:
+                cell.polarization = clk3
+        else:
+            neighbors = graph.component_neighbors(cell)
+            polarized_neighbors = []
+
+            for n in neighbors:
+                if n.value.polarization is not None:
+                    polarized_neighbors.append(n)
+
+            # assume the value of the first polarized neighbor
+            if len(polarized_neighbors) == 0:
+                return None
+            else:
+                return polarized_neighbors[0].value.polarization

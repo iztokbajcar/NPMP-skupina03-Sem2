@@ -241,7 +241,7 @@ class QCAParser:
                     self.graph.add_connection(node1, node2)
 
         # structure recognition
-        # self.graph.recognize_structures()
+        self.graph.recognize_structures()
 
     def visualize_graph(self):
         """Uses pyvis to visualize the cell graph."""
