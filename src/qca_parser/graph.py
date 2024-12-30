@@ -1,6 +1,7 @@
 from component import Component
 from cell import Cell
 from gate import Gate, GateType
+from majority_gate import MajorityGate
 from negator import Negator
 from utils import euclidean_dist, manhattan_dist
 import math
@@ -31,13 +32,19 @@ class Graph:
     def add_connection(self, source: GraphNode, sink: GraphNode):
         self.connections.append(GraphConnection(source, sink))
 
+    def remove_component(self, component: Component):
+        for n in self.nodes:
+            if n.value == component:
+                self.nodes.remove(n)
+                return
+
     def remove_connection(self, source: GraphNode, sink: GraphNode):
         for c in self.connections:
             if c.source == source and c.sink == sink:
                 self.connections.remove(c)
                 return
 
-        raise Exception("Connection not found")
+        # raise Exception("Connection not found")
 
     def component_neighbors(self, component: Component) -> list[Component]:
         """Returns the neighbors of the given cell."""
@@ -50,23 +57,70 @@ class Graph:
         return neighbors
 
     def recognize_structures(self) -> None:
+        # TODO: prettify this
         for node1 in self.nodes:
             if type(node1.value) is not Cell:
                 continue
 
             cell1 = node1.value
+            # neigh1 = [
+            #     n for n in self.component_neighbors(cell1) if isinstance(n.value, Cell)
+            # ]
+            neigh1 = self.component_neighbors(cell1)
+
+            # if the node has 4 neighbors (not counting diagonals),
+            # they form a majority gate
+            von_neumann_neighbors = [
+                n
+                for n in neigh1
+                if isinstance(n.value, Cell)
+                and manhattan_dist((cell1.x, cell1.y), (n.value.x, n.value.y)) == 1
+            ]
+            if len(von_neumann_neighbors) == 4:
+                print(f"MAJ between {cell1.get_name()}")
+                print(f"    - neighbors: {[n.value.get_name() for n in neigh1]}")
+                print(
+                    f"    - von Neumann neighbors: {[n.value.get_name() for n in von_neumann_neighbors]}"
+                )
+                maj = self.add_component(
+                    MajorityGate(
+                        f"{cell1.get_id()}+{'+'.join([n.value.get_id() for n in von_neumann_neighbors])}"
+                    )
+                )
+
+                # replace the center cell with the majority gate
+                for n in von_neumann_neighbors:
+                    self.remove_connection(node1, n)
+                    self.remove_connection(n, node1)
+                    self.add_connection(n, maj)
+                    self.add_connection(maj, n)
+                self.remove_component(cell1)
+
+                # remove diagonal connections between outer cells
+                for n1 in von_neumann_neighbors:
+                    for n2 in von_neumann_neighbors:
+                        if n1 == n2:
+                            continue
+                        self.remove_connection(n1, n2)
+                        self.remove_connection(n2, n1)
+
+                continue
+
             for node2 in self.nodes:
                 if type(node2.value) is not Cell:
                     continue
 
                 cell2 = node2.value
+                # neigh2 = [
+                #     n
+                #     for n in self.component_neighbors(cell2)
+                #     if isinstance(n.value, Cell)
+                # ]
+                neigh2 = self.component_neighbors(cell2)
 
                 e_dist = euclidean_dist((cell1.x, cell1.y), (cell2.x, cell2.y))
-                neigh1 = self.component_neighbors(cell1)
-                neigh2 = self.component_neighbors(cell2)
-                common_neigh = [
-                    c for c in neigh1 if c in neigh2 and isinstance(c.value, Cell)
-                ]
+
+                common_neigh = [c for c in neigh1 if c in neigh2]
 
                 if (
                     math.isclose(e_dist, math.sqrt(2))
