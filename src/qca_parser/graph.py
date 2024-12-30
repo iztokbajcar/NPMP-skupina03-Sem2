@@ -36,6 +36,17 @@ class Graph:
         for n in self.nodes:
             if n.value == component:
                 self.nodes.remove(n)
+
+                to_remove = []
+                for c in self.connections:
+                    if c.source == n or c.sink == n:
+                        print(
+                            f"Removing connection {c.source.value.get_name()} -> {c.sink.value.get_name()}"
+                        )
+                        to_remove.append(c)
+
+                for c in to_remove:
+                    self.connections.remove(c)
                 return
 
     def remove_connection(self, source: GraphNode, sink: GraphNode):
@@ -90,8 +101,6 @@ class Graph:
 
                 # replace the center cell with the majority gate
                 for n in von_neumann_neighbors:
-                    self.remove_connection(node1, n)
-                    self.remove_connection(n, node1)
                     self.add_connection(n, maj)
                     self.add_connection(maj, n)
                 self.remove_component(cell1)
