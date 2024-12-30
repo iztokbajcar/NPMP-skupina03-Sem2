@@ -2,8 +2,15 @@ from gate import Gate, GateType
 
 
 class Negator(Gate):
-    def __init__(self):
+    def __init__(self, gate_id):
         super().__init__(GateType.NEGATOR)
+        self.id = gate_id
+
+    def get_id(self):
+        return self.id
+
+    def get_name(self):
+        return f"NEGATOR ({self.id})"
 
     def determine_polarization(self, node, graph, visited, clk0, clk1, clk2, clk3):
         neighbors = graph.component_neighbors(node.value)

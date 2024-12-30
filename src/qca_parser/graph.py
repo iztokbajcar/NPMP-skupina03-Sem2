@@ -64,7 +64,9 @@ class Graph:
                 e_dist = euclidean_dist((cell1.x, cell1.y), (cell2.x, cell2.y))
                 neigh1 = self.component_neighbors(cell1)
                 neigh2 = self.component_neighbors(cell2)
-                common_neigh = [c for c in neigh1 if c in neigh2 and type(c) is Cell]
+                common_neigh = [
+                    c for c in neigh1 if c in neigh2 and isinstance(c.value, Cell)
+                ]
 
                 if (
                     math.isclose(e_dist, math.sqrt(2))
@@ -73,8 +75,15 @@ class Graph:
                 ):
                     # assumption: if the cells are diagonally adjacent and
                     # have no common neighbors, they form a negator
-                    print(f"NEG between {cell1.get_id()} and {cell2.get_id()}")
-                    negator = self.add_component(Negator())
+                    print(f"NEG between {cell1.get_name()} and {cell2.get_name()}")
+                    print(f"    - neigh1: {[n.value.get_name() for n in neigh1]}")
+                    print(f"    - neigh2: {[n.value.get_name() for n in neigh2]}")
+                    print(
+                        f"    - common neighbors: {[n.value.get_name() for n in common_neigh]}"
+                    )
+                    negator = self.add_component(
+                        Negator(f"{cell1.get_id()}+{cell2.get_id()}")
+                    )
 
                     # remove old connection
                     self.remove_connection(node1, node2)
