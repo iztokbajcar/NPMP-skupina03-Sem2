@@ -134,6 +134,8 @@ class Simulator:
         for n in self.graph.nodes:
             cell_values[n.value.get_id()] = []
 
+        truth_table_values = []
+
         for comb in range(0, num_combinations):
             # simulate for smallest_input_duration steps
 
@@ -188,6 +190,8 @@ class Simulator:
                 clk_values[2].append(clk2)
                 clk_values[3].append(clk3)
 
+            truth_table_values.append([n.value.polarization for n in outputs])
+
         num_subplots = len(inputs) + len(outputs) + 4
 
         # plot inputs
@@ -209,3 +213,9 @@ class Simulator:
             plt.plot(clk_values[i], color="red")
 
         plt.show()
+
+        truth_table = {}
+        truth_table["inputs"] = [n.value.get_name() for n in inputs]
+        truth_table["outputs"] = [n.value.get_name() for n in outputs]
+        truth_table["values"] = truth_table_values
+        return truth_table
