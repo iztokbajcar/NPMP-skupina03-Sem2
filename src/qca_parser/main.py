@@ -1,5 +1,6 @@
 from parser import QCAParser
 from simulator import Simulator
+import converter
 
 if __name__ == "__main__":
     parser = QCAParser()
@@ -9,4 +10,5 @@ if __name__ == "__main__":
     simulator = Simulator(graph)
     truth_table = simulator.simulate(10, 0.01)
     print(truth_table)
+    grenmlin = import_to_grenmlin(truth_table)
     # simulator.simulate(10, 3.1415926535897932384626433)
