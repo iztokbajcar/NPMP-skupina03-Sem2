@@ -2,7 +2,7 @@ import simulator, grn
 import numpy as np
 
 def import_to_grenmlin(simulator_output):
-    simulator_output={'inputs': ['s', 'b', 'a'], 'outputs': ['o'], 'values': [[0], [0], [0], [1], [0], [1], [1], [1]]}
+    #simulator_output={'inputs': ['s', 'b', 'a'], 'outputs': ['o'], 'values': [[0], [0], [0], [1], [0], [1], [1], [1]]}
     new_grn = grn.grn()
     truth_table = []
     products = []
