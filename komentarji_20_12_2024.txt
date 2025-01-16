@@ -1,0 +1,17 @@
+quaen mcclascy metoda: pravilnostna tabel v NDO
+
+
+logicno vezje
+
+add_gene ( kot redulatorja x1 in x2;
+type 1 ali -1 pomeni negacijo
+logic_type: and/Or
+
+
+konjunkcija je lahko en gen
+
+y = x1 V x2: 2 gena
+
+alpa 10 da je konstantno
+
+probaj priti do boolove mreze

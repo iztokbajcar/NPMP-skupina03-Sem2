@@ -22,4 +22,7 @@ if __name__ == "__main__":
     get_components = GetComponents()
     get_components.get_components()
     components = get_components.components
-    components['and'].visualize_graph()
+    components['1bit_fulladder'].visualize_graph()
+
+
+
